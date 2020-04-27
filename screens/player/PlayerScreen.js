@@ -10,6 +10,7 @@ import { useSelector, useDispatch } from "react-redux";
 import * as playlistActions from "../../store/actions/playlist";
 
 import Image from "../../components/templates/Image";
+import Video from "../../components/templates/Video";
 
 const PlayerScreen = (props) => {
   const playlist = useSelector((state) => state.playlist.playlist);
@@ -25,17 +26,20 @@ const PlayerScreen = (props) => {
     setError(null);
     setIsLoading(true);
     try {
-      await dispatch(playlistActions.fetchPlaylist()).then();
+      await dispatch(playlistActions.setPlaylist()).then();
     } catch (err) {
       setError(err.message);
     }
     setIsLoading(false);
-    setContent(playlist[counter]);
-  }, [dispatch, setIsLoading, setError]);
+  }, [dispatch, setIsLoading, setError, setContent]);
 
   useEffect(() => {
-    loadPlaylist();
-  }, [loadPlaylist]);
+    if (playlist.length === 0) {
+      loadPlaylist();
+    } else {
+      setContent(playlist[0]);
+    }
+  }, [loadPlaylist, playlist]);
 
   const nextContext = () => {
     if (counter < playlist.length - 1) {
@@ -50,6 +54,7 @@ const PlayerScreen = (props) => {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" />
+        <Text>Downloading default contents from server...</Text>
       </View>
     );
   }
@@ -63,8 +68,24 @@ const PlayerScreen = (props) => {
     );
   }
 
+  if (!content) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" />
+        <Text>Downloading default contents from server...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View>{content && <Image source={content.link} next={nextContext} />}</View>
+    <View>
+      {content.format === "image" && (
+        <Image source={content.fileUri} next={nextContext} />
+      )}
+      {content.format === "video" && (
+        <Video source={content.fileUri} next={nextContext} />
+      )}
+    </View>
   );
 };
 

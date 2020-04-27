@@ -1,9 +1,9 @@
 class Playlist {
-  constructor(id, name, format, link) {
-    this.id = id;
+  constructor(c_id, name, format, fileUri) {
+    this.id = c_id;
     this.name = name;
     this.format = format;
-    this.link = link;
+    this.fileUri = fileUri;
   }
 }
 

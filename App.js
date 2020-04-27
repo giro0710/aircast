@@ -7,6 +7,27 @@ import playlistReducer from "./store/reducers/playlist";
 
 import PlayerScreen from "./screens/player/PlayerScreen";
 
+import { init } from "./helpers/db";
+import { initContentsFolder } from "./helpers/fs";
+
+init()
+  .then(() => {
+    console.log("Initialized database.");
+  })
+  .catch((err) => {
+    console.log("Initializing db failed.");
+    console.log(err);
+  });
+
+initContentsFolder()
+  .then(() => {
+    console.log("Contents folder created.");
+  })
+  .catch((err) => {
+    console.log("Failed creating contents folder.");
+    console.log(err);
+  });
+
 const rootReducer = combineReducers({
   playlist: playlistReducer,
 });

@@ -1,6 +1,10 @@
 import Playlist from "../../models/playlist";
+import { insertPlaylist, getPlaylist } from "../../helpers/db";
+import { downloadContent } from "../../helpers/fs";
+import { documentDirectory } from "expo-file-system";
 
-export const SET_PLAYLIST = "SET PLAYLIST";
+export const SET_PLAYLIST = "SET_PLAYLIST";
+export const FETCH_PLAYLIST = "FETCH_PLAYLIST";
 
 export const fetchPlaylist = () => {
   return async (dispatch) => {
@@ -23,9 +27,90 @@ export const fetchPlaylist = () => {
             resData[key].c_id,
             resData[key].name,
             resData[key].format,
-            resData[key].link
+            resData[key].file_name
           )
         );
+      }
+
+      const dbResult = await insertPlaylist(JSON.stringify(loadedPlaylist));
+      console.log(dbResult);
+
+      dispatch({
+        type: FETCH_PLAYLIST,
+        playlist: loadedPlaylist,
+      });
+    } catch (err) {
+      // Send to custom or analytic server.
+      throw err;
+    }
+  };
+};
+
+export const setPlaylist = () => {
+  return async (dispatch) => {
+    try {
+      let loadedPlaylist = [];
+      const dbResult = await getPlaylist();
+
+      if (dbResult.rows._array.length === 0) {
+        console.log("Playlist coming from server.");
+        const response = await fetch(
+          "https://aircast-test-api.herokuapp.com/playlist/54IAOAKG"
+        );
+
+        if (!response.ok) {
+          throw new Error("Something went wrong.");
+        }
+
+        const resData = await response.json();
+
+        for (const key in resData) {
+          if (resData[key].is_downloaded) {
+            if (resData[key].is_enable) {
+              loadedPlaylist.push(
+                new Playlist(
+                  resData[key].c_id,
+                  resData[key].name,
+                  resData[key].format,
+                  `${documentDirectory}contents/${resData[key].file_name}`
+                )
+              );
+            }
+          } else {
+            await downloadContent(resData[key].link, resData[key].file_name)
+              .then((uri) => {
+                loadedPlaylist.push(
+                  new Playlist(
+                    resData[key].c_id,
+                    resData[key].name,
+                    resData[key].format,
+                    uri
+                  )
+                );
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
+        }
+
+        if (loadedPlaylist.length > 0) {
+          const dbResult = await insertPlaylist(JSON.stringify(loadedPlaylist));
+          console.log(dbResult);
+        }
+      } else {
+        console.log("Playlist coming from local database.");
+        const playlist = JSON.parse(dbResult.rows._array[0].playlist);
+        for (const key in playlist) {
+          loadedPlaylist.push(
+            new Playlist(
+              playlist[key].id,
+              playlist[key].name,
+              playlist[key].format,
+              playlist[key].fileUri
+            )
+          );
+        }
       }
 
       dispatch({
@@ -33,7 +118,6 @@ export const fetchPlaylist = () => {
         playlist: loadedPlaylist,
       });
     } catch (err) {
-      // Send to custom or analytic server.
       throw err;
     }
   };

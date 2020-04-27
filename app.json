@@ -15,6 +15,15 @@
       "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "ph.gpnagata.aircast"
+    },
+    "androidStatusBar": {
+      "hidden": true
+    },
+    "androidNavigationBar": {
+      "visible": "immersive"
+    },
     "ios": {
       "supportsTablet": true
     }
