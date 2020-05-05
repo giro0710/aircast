@@ -5,7 +5,7 @@ import ReduxThunk from "redux-thunk";
 
 import playlistReducer from "./store/reducers/playlist";
 
-import PlayerScreen from "./screens/player/PlayerScreen";
+import MainScreen from "./screens/player/MainScreen";
 
 import { init } from "./helpers/db";
 import { initContentsFolder } from "./helpers/fs";
@@ -37,7 +37,7 @@ const store = createStore(rootReducer, applyMiddleware(ReduxThunk));
 export default function App() {
   return (
     <Provider store={store}>
-      <PlayerScreen />
+      <MainScreen />
     </Provider>
   );
 }

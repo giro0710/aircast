@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  Button,
-  StyleSheet,
-} from "react-native";
+import { View } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import * as playlistActions from "../../store/actions/playlist";
+
+import Loading from "../../components/UI/Loading";
 
 import Image from "../../components/templates/Image";
 import Video from "../../components/templates/Video";
 
-const PlayerScreen = (props) => {
+const MainScreen = (props) => {
   const playlist = useSelector((state) => state.playlist.playlist);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(
+    "Application starting..."
+  );
   const [error, setError] = useState();
   const [counter, setCounter] = useState(0);
   const [content, setContent] = useState();
@@ -26,6 +25,7 @@ const PlayerScreen = (props) => {
     setError(null);
     setIsLoading(true);
     try {
+      setLoadingMessage("Downloading playlist from the server...");
       await dispatch(playlistActions.setPlaylist()).then();
     } catch (err) {
       setError(err.message);
@@ -33,10 +33,22 @@ const PlayerScreen = (props) => {
     setIsLoading(false);
   }, [dispatch, setIsLoading, setError, setContent]);
 
+  const loadNewPlaylist = useCallback(async () => {
+    setError(null);
+    try {
+      await dispatch(playlistActions.fetchPlaylist()).then();
+    } catch (err) {
+      setError(err.message);
+    }
+    console.log("Done updating playlist.");
+    console.log(playlist.length);
+  }, [dispatch, setError]);
+
   useEffect(() => {
     if (playlist.length === 0) {
       loadPlaylist();
     } else {
+      setLoadingMessage("Completed");
       setContent(playlist[0]);
     }
   }, [loadPlaylist, playlist]);
@@ -50,30 +62,16 @@ const PlayerScreen = (props) => {
     setContent(playlist[counter]);
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text>Downloading default contents from server...</Text>
-      </View>
-    );
+  if (isLoading || !content) {
+    return <Loading text={loadingMessage} />;
   }
 
   if (error) {
     return (
-      <View style={styles.centered}>
-        <Text>An error occurred! Please contact support for assistance.</Text>
-        <Button title="Try Again" onPress={loadPlaylist} />
-      </View>
-    );
-  }
-
-  if (!content) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text>Downloading default contents from server...</Text>
-      </View>
+      <Loading
+        text="An error occurred! Please contact support for assistance."
+        textColor="red"
+      />
     );
   }
 
@@ -89,8 +87,4 @@ const PlayerScreen = (props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
-});
-
-export default PlayerScreen;
+export default MainScreen;

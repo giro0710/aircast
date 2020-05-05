@@ -22,14 +22,35 @@ export const fetchPlaylist = () => {
       let loadedPlaylist = [];
 
       for (const key in resData) {
-        loadedPlaylist.push(
-          new Playlist(
-            resData[key].c_id,
-            resData[key].name,
-            resData[key].format,
-            resData[key].file_name
-          )
-        );
+        if (resData[key].is_downloaded) {
+          if (resData[key].is_enable) {
+            loadedPlaylist.push(
+              new Playlist(
+                resData[key].c_id,
+                resData[key].name,
+                resData[key].format,
+                `${documentDirectory}contents/${resData[key].file_name}`
+              )
+            );
+          } else {
+            await downloadContent(resData[key].link, resData[key].file_name)
+              .then((uri) => {
+                if (resData[key].is_enable) {
+                  loadedPlaylist.push(
+                    new Playlist(
+                      resData[key].c_id,
+                      resData[key].name,
+                      resData[key].format,
+                      uri
+                    )
+                  );
+                }
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
+        }
       }
 
       const dbResult = await insertPlaylist(JSON.stringify(loadedPlaylist));
@@ -79,14 +100,16 @@ export const setPlaylist = () => {
           } else {
             await downloadContent(resData[key].link, resData[key].file_name)
               .then((uri) => {
-                loadedPlaylist.push(
-                  new Playlist(
-                    resData[key].c_id,
-                    resData[key].name,
-                    resData[key].format,
-                    uri
-                  )
-                );
+                if (resData[key].is_enable) {
+                  loadedPlaylist.push(
+                    new Playlist(
+                      resData[key].c_id,
+                      resData[key].name,
+                      resData[key].format,
+                      uri
+                    )
+                  );
+                }
               })
               .catch((err) => {
                 console.error(err);

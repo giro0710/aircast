@@ -11,6 +11,7 @@ const VideoTemplate = (props) => {
       if (playbackStatus.error) {
         // Send error to the server for troubleshooting
         console.log(playbackStatus.error);
+        next();
       }
     } else {
       if (playbackStatus.didJustFinish && !playbackStatus.isLooping) {
