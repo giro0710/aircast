@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 import * as playlistActions from "../../store/actions/playlist";
 
 import Loading from "../../components/UI/Loading";
 
-import Image from "../../components/templates/Image";
-import Video from "../../components/templates/Video";
+import Player from "../../components/UI/Player";
 
 const MainScreen = (props) => {
   const playlist = useSelector((state) => state.playlist.playlist);
@@ -16,8 +14,6 @@ const MainScreen = (props) => {
     "Application starting..."
   );
   const [error, setError] = useState();
-  const [counter, setCounter] = useState(0);
-  const [content, setContent] = useState();
 
   const dispatch = useDispatch();
 
@@ -31,38 +27,25 @@ const MainScreen = (props) => {
       setError(err.message);
     }
     setIsLoading(false);
-  }, [dispatch, setIsLoading, setError, setContent]);
-
-  const loadNewPlaylist = useCallback(async () => {
-    setError(null);
-    try {
-      await dispatch(playlistActions.fetchPlaylist()).then();
-    } catch (err) {
-      setError(err.message);
-    }
-    console.log("Done updating playlist.");
-    console.log(playlist.length);
-  }, [dispatch, setError]);
+  }, [dispatch, setIsLoading, setError]);
 
   useEffect(() => {
     if (playlist.length === 0) {
       loadPlaylist();
     } else {
       setLoadingMessage("Completed");
-      setContent(playlist[0]);
     }
   }, [loadPlaylist, playlist]);
 
-  const nextContext = () => {
-    if (counter < playlist.length - 1) {
-      setCounter((counter) => counter + 1);
-    } else {
-      setCounter(0);
+  const getNextPlaylist = useCallback(async () => {
+    try {
+      await dispatch(playlistActions.fetchPlaylist()).then();
+    } catch (err) {
+      // Report to server
     }
-    setContent(playlist[counter]);
-  };
+  }, [dispatch]);
 
-  if (isLoading || !content) {
+  if (isLoading || playlist.length === 0) {
     return <Loading text={loadingMessage} />;
   }
 
@@ -75,16 +58,7 @@ const MainScreen = (props) => {
     );
   }
 
-  return (
-    <View>
-      {content.format === "image" && (
-        <Image source={content.fileUri} next={nextContext} />
-      )}
-      {content.format === "video" && (
-        <Video source={content.fileUri} next={nextContext} />
-      )}
-    </View>
-  );
+  return <Player playlist={playlist} nextPlaylist={getNextPlaylist} />;
 };
 
 export default MainScreen;

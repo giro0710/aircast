@@ -7,7 +7,7 @@ const ImageTemplate = (props) => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       next();
-    }, 5000);
+    }, 15000);
 
     return () => {
       clearTimeout(timeout);

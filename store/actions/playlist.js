@@ -32,24 +32,24 @@ export const fetchPlaylist = () => {
                 `${documentDirectory}contents/${resData[key].file_name}`
               )
             );
-          } else {
-            await downloadContent(resData[key].link, resData[key].file_name)
-              .then((uri) => {
-                if (resData[key].is_enable) {
-                  loadedPlaylist.push(
-                    new Playlist(
-                      resData[key].c_id,
-                      resData[key].name,
-                      resData[key].format,
-                      uri
-                    )
-                  );
-                }
-              })
-              .catch((err) => {
-                console.error(err);
-              });
           }
+        } else {
+          await downloadContent(resData[key].link, resData[key].file_name)
+            .then((uri) => {
+              if (resData[key].is_enable) {
+                loadedPlaylist.push(
+                  new Playlist(
+                    resData[key].c_id,
+                    resData[key].name,
+                    resData[key].format,
+                    uri
+                  )
+                );
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+            });
         }
       }
 
@@ -58,7 +58,7 @@ export const fetchPlaylist = () => {
 
       dispatch({
         type: FETCH_PLAYLIST,
-        playlist: loadedPlaylist,
+        nextPlaylist: loadedPlaylist,
       });
     } catch (err) {
       // Send to custom or analytic server.
