@@ -38,7 +38,7 @@ const MainScreen = (props) => {
   }, [loadPlaylist, playlist]);
 
   const getNextPlaylist = useCallback(async () => {
-    try {
+    try { 
       await dispatch(playlistActions.fetchPlaylist()).then();
     } catch (err) {
       // Report to server

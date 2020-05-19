@@ -6,6 +6,48 @@ import { documentDirectory } from "expo-file-system";
 export const SET_PLAYLIST = "SET_PLAYLIST";
 export const FETCH_PLAYLIST = "FETCH_PLAYLIST";
 
+const reportContentDownload = (mk_id, c_id) => {
+  try {
+    return fetch("https://aircast-test-api.herokuapp.com/playlist", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify({
+        mk_id: mk_id,
+        c_id: c_id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((json) => null);
+  } catch (err) {
+    // Send to custom or analytic server.
+    throw err;
+  }
+};
+
+export const reportPlayContent = (c_id) => {
+  return () => {
+    try {
+      fetch("https://aircast-test-api.herokuapp.com/playlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+        body: JSON.stringify({
+          mk_id: "54IAOAKG",
+          c_id: c_id,
+        }),
+      })
+        .then((response) => response.json())
+        .then((json) => null);
+    } catch (err) {
+      // Send to custom or analytic server.
+      throw err;
+    }
+  };
+};
+
 export const fetchPlaylist = () => {
   return async (dispatch) => {
     try {
@@ -50,11 +92,11 @@ export const fetchPlaylist = () => {
             .catch((err) => {
               console.error(err);
             });
+          reportContentDownload("54IAOAKG", resData[key].c_id).then();
         }
       }
 
       const dbResult = await insertPlaylist(JSON.stringify(loadedPlaylist));
-      console.log(dbResult);
 
       dispatch({
         type: FETCH_PLAYLIST,
@@ -114,12 +156,12 @@ export const setPlaylist = () => {
               .catch((err) => {
                 console.error(err);
               });
+            reportContentDownload("54IAOAKG", resData[key].c_id).then();
           }
         }
 
         if (loadedPlaylist.length > 0) {
           const dbResult = await insertPlaylist(JSON.stringify(loadedPlaylist));
-          console.log(dbResult);
         }
       } else {
         console.log("Playlist coming from local database.");
@@ -127,7 +169,7 @@ export const setPlaylist = () => {
         for (const key in playlist) {
           loadedPlaylist.push(
             new Playlist(
-              playlist[key].id,
+              playlist[key].c_id,
               playlist[key].name,
               playlist[key].format,
               playlist[key].fileUri

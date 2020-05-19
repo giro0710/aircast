@@ -1,17 +1,22 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { View } from "react-native";
+import { reportPlayContent } from "../../store/actions/playlist";
 
 import Image from "../templates/Image";
 import Video from "../templates/Video";
 
 const Player = (props) => {
   const [playlist, setPlaylist] = useState(props.playlist);
-  const [content, setContent] = useState(playlist[counter]);
+  const [content, setContent] = useState(playlist[0]);
 
   const nextPlaylist = useSelector((state) => state.playlist.nextPlaylist);
 
+  const dispatch = useDispatch();
+
   const nextContent = () => {
+    dispatch(reportPlayContent(content.c_id));
+
     const temp = [...playlist];
     temp.splice(0, 1);
     setPlaylist(temp);
