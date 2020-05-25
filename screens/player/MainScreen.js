@@ -29,6 +29,24 @@ const MainScreen = (props) => {
     setIsLoading(false);
   }, [dispatch, setIsLoading, setError]);
 
+  const sendOnlineStatusReport = useCallback(async () => {
+    try {
+      return fetch("https://aircast-test-api.herokuapp.com/status/online", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+        body: JSON.stringify({
+          mk_id: "54IAOAKG",
+        }),
+      })
+        .then((response) => response.json())
+        .then((json) => null);
+    } catch (err) {
+      setError(err.message);
+    }
+  }, [setError]);
+
   useEffect(() => {
     if (playlist.length === 0) {
       loadPlaylist();
@@ -37,8 +55,19 @@ const MainScreen = (props) => {
     }
   }, [loadPlaylist, playlist]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      sendOnlineStatusReport();
+      console.log("Online report sent.");
+    }, 60000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [sendOnlineStatusReport]);
+
   const getNextPlaylist = useCallback(async () => {
-    try { 
+    try {
       await dispatch(playlistActions.fetchPlaylist()).then();
     } catch (err) {
       // Report to server
