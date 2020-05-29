@@ -30,6 +30,7 @@ const MainScreen = (props) => {
   }, [dispatch, setIsLoading, setError]);
 
   const sendOnlineStatusReport = useCallback(async () => {
+    setError(null);
     try {
       return fetch("https://aircast-test-api.herokuapp.com/status/online", {
         method: "PUT",
@@ -58,7 +59,6 @@ const MainScreen = (props) => {
   useEffect(() => {
     const interval = setInterval(() => {
       sendOnlineStatusReport();
-      console.log("Online report sent.");
     }, 60000);
 
     return () => {
