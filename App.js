@@ -44,7 +44,7 @@ const rootReducer = combineReducers({
 const store = createStore(rootReducer, applyMiddleware(ReduxThunk));
 
 export default function App() {
-  const [mediaKitId, setmediaKitId] = useState(null)
+  const [mediaKitId, setMediaKitId] = useState(null)
   const [modalVisible, setModalVisible] = useState(false);
   const [enteredId, setEnteredId] = useState('');
 
@@ -57,7 +57,7 @@ export default function App() {
     setId(enteredId)
       .then(() => {
         console.log("Media kit id set.");
-        setmediaKitId(enteredId);
+        setMediaKitId(enteredId);
       })
       .catch((err) => {
         console.log("Failed retrieving media kit id.");
@@ -65,26 +65,26 @@ export default function App() {
       });
   }
 
-  const setMediaKitId = useCallback(async () => {
-    getId()
-      .then((id) => {
-        if (!id) {
-          setModalVisible(true)
-        } else {
-          setMediaKitId(id.id);
-        }
-      })
-      .catch((err) => {
-        console.log("Failed retrieving media kit id.");
-        console.log(err);
-      });
-  })
+  const getMediaKitId = useCallback(async () => {
+    try {
+      const id = await getId();
+      if (!id) {
+        setModalVisible(true)
+      } else {
+        const retrievedId = id.id;
+        setMediaKitId(retrievedId);
+      }
+    } catch (err) {
+      console.log("Failed retrieving media kit id.");
+      console.log(err);
+    }
+  }, [getId, setMediaKitId])
 
   useEffect(() => {
     if (!mediaKitId) {
-      setMediaKitId();
+      getMediaKitId();
     }
-  }, [mediaKitId, setMediaKitId]);
+  }, [mediaKitId, getMediaKitId]);
 
   return (
     <Provider store={store}>
