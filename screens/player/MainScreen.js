@@ -17,17 +17,21 @@ const MainScreen = (props) => {
 
   const dispatch = useDispatch();
 
+  const mediaKitId = props.mediaKitId;
+
   const loadPlaylist = useCallback(async () => {
     setError(null);
     setIsLoading(true);
+
     try {
       setLoadingMessage("Downloading playlist from the server...");
-      await dispatch(playlistActions.setPlaylist()).then();
+      await dispatch(playlistActions.setPlaylist(mediaKitId)).then();
     } catch (err) {
       setError(err.message);
     }
+
     setIsLoading(false);
-  }, [dispatch, setIsLoading, setError]);
+  }, [dispatch, mediaKitId, setIsLoading, setError]);
 
   const sendOnlineStatusReport = useCallback(async () => {
     setError(null);
@@ -38,7 +42,7 @@ const MainScreen = (props) => {
           "Content-Type": "application/json; charset=UTF-8",
         },
         body: JSON.stringify({
-          mk_id: "54IAOAKG",
+          mk_id: mediaKitId,
         }),
       })
         .then((response) => response.json())
@@ -46,29 +50,33 @@ const MainScreen = (props) => {
     } catch (err) {
       setError(err.message);
     }
-  }, [setError]);
+  }, [mediaKitId, setError]);
 
   useEffect(() => {
-    if (playlist.length === 0) {
-      loadPlaylist();
-    } else {
-      setLoadingMessage("Completed");
+    if (mediaKitId) {
+      if (playlist.length === 0) {
+        loadPlaylist();
+      } else {
+        setLoadingMessage("Completed");
+      }
     }
-  }, [loadPlaylist, playlist]);
+  }, [mediaKitId, loadPlaylist, playlist]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      sendOnlineStatusReport();
-    }, 60000);
+    if (mediaKitId) {
+      const interval = setInterval(() => {
+        sendOnlineStatusReport();
+      }, 60000);
 
-    return () => {
-      clearInterval(interval);
-    };
-  }, [sendOnlineStatusReport]);
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [mediaKitId, sendOnlineStatusReport]);
 
   const getNextPlaylist = useCallback(async () => {
     try {
-      await dispatch(playlistActions.fetchPlaylist()).then();
+      await dispatch(playlistActions.fetchPlaylist(mediaKitId)).then();
     } catch (err) {
       // Report to server
     }
@@ -87,7 +95,7 @@ const MainScreen = (props) => {
     );
   }
 
-  return <Player playlist={playlist} nextPlaylist={getNextPlaylist} />;
+  return <Player playlist={playlist} nextPlaylist={getNextPlaylist} mediaKitId={mediaKitId} />;
 };
 
 export default MainScreen;

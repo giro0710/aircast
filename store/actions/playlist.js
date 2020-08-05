@@ -26,7 +26,7 @@ const reportContentDownload = (mk_id, c_id) => {
   }
 };
 
-export const reportPlayContent = (c_id) => {
+export const reportPlayContent = (mediaKitId, c_id) => {
   return () => {
     try {
       fetch("https://aircast-test-api.herokuapp.com/playlist", {
@@ -35,7 +35,7 @@ export const reportPlayContent = (c_id) => {
           "Content-Type": "application/json; charset=UTF-8",
         },
         body: JSON.stringify({
-          mk_id: "54IAOAKG",
+          mk_id: mediaKitId,
           c_id: c_id,
         }),
       })
@@ -48,11 +48,11 @@ export const reportPlayContent = (c_id) => {
   };
 };
 
-export const fetchPlaylist = () => {
+export const fetchPlaylist = (mediaKitId) => {
   return async (dispatch) => {
     try {
       const response = await fetch(
-        "https://aircast-test-api.herokuapp.com/playlist/54IAOAKG"
+        "https://aircast-test-api.herokuapp.com/playlist/" + mediaKitId
       );
 
       if (!response.ok) {
@@ -92,7 +92,7 @@ export const fetchPlaylist = () => {
             .catch((err) => {
               console.error(err);
             });
-          reportContentDownload("54IAOAKG", resData[key].c_id).then();
+          reportContentDownload(mediaKitId, resData[key].c_id).then();
         }
       }
 
@@ -109,7 +109,8 @@ export const fetchPlaylist = () => {
   };
 };
 
-export const setPlaylist = () => {
+export const setPlaylist = (mediaKitId) => {
+  console.log(mediaKitId)
   return async (dispatch) => {
     try {
       let loadedPlaylist = [];
@@ -118,7 +119,7 @@ export const setPlaylist = () => {
       if (dbResult.rows._array.length === 0) {
         console.log("Playlist coming from server.");
         const response = await fetch(
-          "https://aircast-test-api.herokuapp.com/playlist/54IAOAKG"
+          "https://aircast-test-api.herokuapp.com/playlist/" + mediaKitId
         );
 
         if (!response.ok) {
@@ -156,7 +157,7 @@ export const setPlaylist = () => {
               .catch((err) => {
                 console.error(err);
               });
-            reportContentDownload("54IAOAKG", resData[key].c_id).then();
+            reportContentDownload(mediaKitId, resData[key].c_id).then();
           }
         }
 

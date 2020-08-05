@@ -15,7 +15,7 @@ const Player = (props) => {
   const dispatch = useDispatch();
 
   const nextContent = () => {
-    dispatch(reportPlayContent(content.c_id));
+    dispatch(reportPlayContent(props.mediaKitId, content.c_id));
 
     const temp = [...playlist];
     temp.splice(0, 1);
