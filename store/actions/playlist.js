@@ -8,7 +8,7 @@ export const FETCH_PLAYLIST = "FETCH_PLAYLIST";
 
 const reportContentDownload = (mk_id, c_id) => {
   try {
-    return fetch("https://aircast-test-api.herokuapp.com/playlist", {
+    return fetch("https://android-api.aircast.ph/playlist", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
@@ -29,7 +29,7 @@ const reportContentDownload = (mk_id, c_id) => {
 export const reportPlayContent = (mediaKitId, c_id) => {
   return () => {
     try {
-      fetch("https://aircast-test-api.herokuapp.com/playlist", {
+      fetch("https://android-api.aircast.ph/playlist", {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=UTF-8",
@@ -52,7 +52,7 @@ export const fetchPlaylist = (mediaKitId) => {
   return async (dispatch) => {
     try {
       const response = await fetch(
-        "https://aircast-test-api.herokuapp.com/playlist/" + mediaKitId
+        "https://android-api.aircast.ph/playlist/" + mediaKitId
       );
 
       if (!response.ok) {
@@ -110,7 +110,6 @@ export const fetchPlaylist = (mediaKitId) => {
 };
 
 export const setPlaylist = (mediaKitId) => {
-  console.log(mediaKitId)
   return async (dispatch) => {
     try {
       let loadedPlaylist = [];
@@ -119,7 +118,7 @@ export const setPlaylist = (mediaKitId) => {
       if (dbResult.rows._array.length === 0) {
         console.log("Playlist coming from server.");
         const response = await fetch(
-          "https://aircast-test-api.herokuapp.com/playlist/" + mediaKitId
+          "https://android-api.aircast.ph/playlist/" + mediaKitId
         );
 
         if (!response.ok) {

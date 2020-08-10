@@ -36,7 +36,7 @@ const MainScreen = (props) => {
   const sendOnlineStatusReport = useCallback(async () => {
     setError(null);
     try {
-      return fetch("https://aircast-test-api.herokuapp.com/status/online", {
+      return fetch("https://android-api.aircast.ph/status/online", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json; charset=UTF-8",

@@ -47,22 +47,73 @@ export default function App() {
   const [mediaKitId, setMediaKitId] = useState(null)
   const [modalVisible, setModalVisible] = useState(false);
   const [enteredId, setEnteredId] = useState('');
+  const [isCorrectInput, setIsCorrectInput] = useState(false);
+  const [isInputTouched, setIsInputTouched] = useState(false);
+  const [inputErrorMessage, setInputErrorMessage] = useState('*Please input the correct media kit id.');
 
   const idInputHandler = (enteredText) => {
     setEnteredId(enteredText)
+    setIsInputTouched(true);
   }
 
   const onIdConfirmHandler = () => {
-    setModalVisible(!modalVisible);
-    setId(enteredId)
-      .then(() => {
-        console.log("Media kit id set.");
-        setMediaKitId(enteredId);
-      })
-      .catch((err) => {
-        console.log("Failed retrieving media kit id.");
-        console.log(err);
-      });
+    if (enteredId.trim().length === 0) {
+      setInputErrorMessage("Please input media kit id.")
+      setIsCorrectInput(false);
+    } else if (enteredId.trim().length < 8) {
+      setInputErrorMessage("Media kit id must be 8 characters.")
+      setIsCorrectInput(false);
+    } else {
+      try {
+        return fetch("https://android-api.aircast.ph/mediakit/" + enteredId, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json; charset=UTF-8",
+          },
+        })
+          .then((response) => response.json())
+          .then((json) => {
+            if (json.kind === "found") {
+              if (json.is_activated === 0) {
+                setModalVisible(!modalVisible);
+                setId(enteredId)
+                  .then(() => {
+                    console.log("Media kit id set.");
+                    setMediaKitId(enteredId);
+                    try {
+                      return fetch("https://android-api.aircast.ph/mediakit/activate", {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json; charset=UTF-8",
+                        },
+                        body: JSON.stringify({
+                          mk_id: enteredId,
+                        }),
+                      })
+                        .then((response) => response.json())
+                        .then((json) => null);
+                    } catch (err) {
+                      setError(err.message);
+                    }
+                  })
+                  .catch((err) => {
+                    console.log("Failed retrieving media kit id.");
+                    console.log(err);
+                  });
+                setIsCorrectInput(true);
+              } else {
+                setInputErrorMessage("Media kit id has already activated. Please input a new one.")
+                setIsCorrectInput(false);
+              }
+            } else {
+              setInputErrorMessage("Media kit id doesn't exist in the database.")
+              setIsCorrectInput(false);
+            }
+          });
+      } catch (err) {
+        setError(err.message);
+      }
+    }
   }
 
   const getMediaKitId = useCallback(async () => {
@@ -115,6 +166,7 @@ export default function App() {
             >
               <Text style={styles.textStyle}>Confirm</Text>
             </TouchableHighlight>
+            {!isCorrectInput && isInputTouched && <Text style={styles.errorMessage}>{inputErrorMessage}</Text>}
           </View>
         </View>
       </Modal>
@@ -177,4 +229,8 @@ const styles = StyleSheet.create({
     padding: 2,
     marginBottom: 15
   },
+  errorMessage: {
+    color: "red",
+    marginTop: 15
+  }
 });
