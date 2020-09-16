@@ -8,17 +8,18 @@ import {
   TouchableHighlight,
   View
 } from "react-native";
-import { createStore, combineReducers, applyMiddleware } from "redux";
-import { Provider } from "react-redux";
-import ReduxThunk from "redux-thunk";
+import { createStore, combineReducers, applyMiddleware } from "redux"; // DATA MANAGEMENT
+import { Provider } from "react-redux"; // DATA MANAGEMENT
+import ReduxThunk from "redux-thunk"; // API REQUEST
 
 import playlistReducer from "./store/reducers/playlist";
 
 import MainScreen from "./screens/player/MainScreen";
 
-import { init, getId, setId } from "./helpers/db";
-import { initContentsFolder } from "./helpers/fs";
+import { init, getId, setId } from "./helpers/db"; // ALL DATABASE FUNCTION
+import { initContentsFolder } from "./helpers/fs"; // ALL FILE SYSTEM FUNCTION
 
+// CREATING LOCAL DATABASE AND TABLES
 init()
   .then(() => {
     console.log("Initialized database.");
@@ -28,6 +29,7 @@ init()
     console.log(err);
   });
 
+// CREATING CONTENT WHERE DOWNLOADED CONTENT BEING STORED
 initContentsFolder()
   .then(() => {
     console.log("Contents folder created.");
@@ -37,6 +39,7 @@ initContentsFolder()
     console.log(err);
   });
 
+// INITIATING REDUCER
 const rootReducer = combineReducers({
   playlist: playlistReducer,
 });
@@ -51,19 +54,24 @@ export default function App() {
   const [isInputTouched, setIsInputTouched] = useState(false);
   const [inputErrorMessage, setInputErrorMessage] = useState('*Please input the correct media kit id.');
 
+  // HANDLING ONCHANGE TEXT EVENT OF TEXTINPUT FOR SAVING USER INPUT ID IN STATE
   const idInputHandler = (enteredText) => {
     setEnteredId(enteredText)
     setIsInputTouched(true);
   }
 
+  // HANDLING ID CONFIRMATION/SUBMITION EVENT
   const onIdConfirmHandler = () => {
     if (enteredId.trim().length === 0) {
+      // CHECK IF THE USER REALLY ENTER AN ID OR A BLANK SPACE
       setInputErrorMessage("Please input media kit id.")
       setIsCorrectInput(false);
     } else if (enteredId.trim().length < 8) {
+      // CHECK IF THE ID INPUTTED BY THE USER HAS 8 CHARACTERS
       setInputErrorMessage("Media kit id must be 8 characters.")
       setIsCorrectInput(false);
     } else {
+      // IF ID REQUIREMENT MET, SEND IT TO SERVER FOR VERIFICATION IF IT EXISTING
       try {
         return fetch("https://android-api.aircast.ph/mediakit/" + enteredId, {
           method: "GET",
@@ -74,12 +82,17 @@ export default function App() {
           .then((response) => response.json())
           .then((json) => {
             if (json.kind === "found") {
+              // IF ID EXIST
               if (json.is_activated === 0) {
+                // CHECK IF ITS NOT YET ACTIVATED, HIDE ENTER ID MODAL
                 setModalVisible(!modalVisible);
+                // SAVE ID TO LOCAL DATABASE SO IT WONT ASK AGAIN NEXT RUN
                 setId(enteredId)
                   .then(() => {
                     console.log("Media kit id set.");
+                    // SET ID TO STATE
                     setMediaKitId(enteredId);
+                    // SEND ID ACTIVATION TO SERVER
                     try {
                       return fetch("https://android-api.aircast.ph/mediakit/activate", {
                         method: "PUT",
@@ -116,12 +129,15 @@ export default function App() {
     }
   }
 
+  // FUNCTION TO GET MEDIA KIT ID SAVED IN LOCAL DATABASE
   const getMediaKitId = useCallback(async () => {
     try {
       const id = await getId();
       if (!id) {
+        // IF HAS NO ID SAVE, SHOW ASK ID MODAL
         setModalVisible(true)
       } else {
+        // IF HAS, SET IT TO STATE
         const retrievedId = id.id;
         setMediaKitId(retrievedId);
       }
@@ -132,6 +148,7 @@ export default function App() {
   }, [getId, setMediaKitId])
 
   useEffect(() => {
+    // IF NO MEDIA ID SET ON STATE, GET IT TO LOCAL DATABASE
     if (!mediaKitId) {
       getMediaKitId();
     }
