@@ -75,6 +75,7 @@ const MainScreen = (props) => {
   }, [mediaKitId, sendOnlineStatusReport]);
 
   const getNextPlaylist = useCallback(async () => {
+    console.log("Tinawag ako ni Player.")
     try {
       await dispatch(playlistActions.fetchPlaylist(mediaKitId)).then();
     } catch (err) {

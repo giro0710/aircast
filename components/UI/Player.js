@@ -23,7 +23,8 @@ const Player = (props) => {
 
     setContent(playlist[0]);
 
-    if (playlist.length === 1) {
+    if (temp.length === 1) {
+      console.log("Isang content na lang natira. Kailangan ng bago.")
       setPlaylist((playlist) => playlist.concat(nextPlaylist));
       props.nextPlaylist();
     }

@@ -49,8 +49,10 @@ export const reportPlayContent = (mediaKitId, c_id) => {
 };
 
 export const fetchPlaylist = (mediaKitId) => {
+  console.log("Nasa fetch na yung uod.")
   return async (dispatch) => {
     try {
+      console.log("Tumawag na sa server ang uod.")
       const response = await fetch(
         "https://android-api.aircast.ph/playlist/" + mediaKitId
       );
@@ -60,6 +62,8 @@ export const fetchPlaylist = (mediaKitId) => {
       }
 
       const resData = await response.json();
+
+      console.log(resData)
 
       let loadedPlaylist = [];
 
