@@ -113,6 +113,24 @@ export const fetchPlaylist = (mediaKitId) => {
   };
 };
 
+export const updateNextPlaylist = (playlist) => {
+  return async (dispatch) => {
+    try {
+      const dbResult = await insertPlaylist(JSON.stringify(playlist));
+
+      console.log(dbResult);
+
+      dispatch({
+        type: FETCH_PLAYLIST,
+        nextPlaylist: playlist,
+      });
+    } catch (err) {
+      // Send to custom or analytic server.
+      throw err;
+    }
+  }
+}
+
 export const setPlaylist = (mediaKitId) => {
   return async (dispatch) => {
     try {
